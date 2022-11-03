@@ -4,76 +4,66 @@ public class Main {
     static Scanner reader = new Scanner(System.in);
 
     public static void main(String[] args) {
+        System.out.print("Please enter network capacity:   ");
         int number = reader.nextInt();
         reader.nextLine();
+        System.out.print("Please enter IP address:         ");
         String netAddress = reader.nextLine();
+        System.out.println();
         int pow = calculation(number);
+        String subnetMask = "";
 
-        if(pow < 9){
-            for (int i = 8 - pow; i < 8; i++){
-                subnet[3][i] = 0;
-            }
-        }
-        if(pow > 8){
-            int octet2 = pow - 8;
-
-            for (int i = 8 - octet2; i < 8; i++){
-                subnet[2][i] = 0;
-            }
-        }
 
         if (pow > 24){
             int octet4 = pow - 24;
             for (int i = 8 - octet4; i < 8; i++){
-                subnet[0][i] = 0;
+                subnetArray[0][i] = 0;
             }
 
             for (int i = 1; i < 4; i++){
                 for (int j = 0; j < 8; j++){
-                    subnet[i][j] = 0;
+                    subnetArray[i][j] = 0;
                 }
             }
         }
         else if(pow > 16 && pow < 25){
             int octet3 = pow - 16;
             for (int i = 8 - octet3; i < 8; i++){
-                subnet[1][i] = 0;
+                subnetArray[1][i] = 0;
             }
 
             for (int i = 2; i < 4; i++){
                 for (int j = 0; j < 8; j++){
-                    subnet[i][j] = 0;
+                    subnetArray[i][j] = 0;
                 }
             }
         }
         else if(pow > 8 && pow < 17){
             int octet2 = pow - 8;
             for (int i = 8 - octet2; i < 8; i++){
-                subnet[2][i] = 0;
+                subnetArray[2][i] = 0;
             }
 
             for (int i = 3; i < 4; i++){
                 for (int j = 0; j < 8; j++){
-                    subnet[i][j] = 0;
+                    subnetArray[i][j] = 0;
                 }
             }
         }
         else{
             for (int i = 8 - pow; i < 8; i++){
-                subnet[3][i] = 0;
+                subnetArray[3][i] = 0;
             }
         }
 
 
-
+        // for converting subnet mask from array to string
         for (int i = 0; i < 4; i++){
             for (int j = 0; j < 8; j++){
-                subnetString += String.valueOf(subnet[i][j]);
+                subnetMask += String.valueOf(subnetArray[i][j]);
             }
-            if (i < 3) subnetString += '.';
+            if (i < 3) subnetMask += '.';
         }
-
-        int possible = (int) (Math.pow(2, pow) - 2);
 
         String[] netAddressInput = netAddress.split("\\.");
 
@@ -82,41 +72,26 @@ public class Main {
         String octet3 = netAddressInput[2];
         String octet4 = netAddressInput[3];
 
-//        if (pow < 9){
-//            if ((254 - Integer.parseInt(octet4)) >= possible){
-//                    ipRange = octet1 + "." + octet2 + "." + octet3 + "." + (Integer.parseInt(octet4) + 1) + "  -  " + (Integer.parseInt(octet4) + possible);
-//                    broadcast = octet1 + "." + octet2 + "." + octet3+ "." + (Integer.parseInt(octet4) + possible + 1);
-//                    System.out.println(ipRange);
-//                    System.out.println(broadcast);
-//            }else{
-//                    ipRange = octet1 + "." + octet2 + "." + octet3 + "." + (255 - possible) + "  -  254";
-//                    broadcast = octet1 + "." + octet2 + "." + octet3+ ".255";
-//                    System.out.println(ipRange);
-//                    System.out.println(broadcast);
-//            }
-//        }else if(pow > 8 && pow < 17){
-//            System.out.println(possible);
-//            int octet3Digit = possible/255 - 1;
-//            octet4 = String.valueOf(254 - octet3Digit);
-//            ipRange = octet1 + "." + octet2 + "." + octet3 + ".1  -  " + octet1 + "." + octet2 + "." + (Integer.parseInt(octet3) + octet3Digit) + ".254" ;
-//            broadcast = octet1 + "." + octet2 + "." + (Integer.parseInt(octet3) + octet3Digit) + ".255";
-//            System.out.println(ipRange);
-//            System.out.println(broadcast);
-//        }
 
-        String fullIpAddress = calculation2(Integer.parseInt(octet1)) + '.' + calculation2(Integer.parseInt(octet2)) + '.' + calculation2(Integer.parseInt(octet3)) + '.' + calculation2(Integer.parseInt(octet4));
+        String ipAddressBinary = decimalToBinary(Integer.parseInt(octet1)) + '.' + decimalToBinary(Integer.parseInt(octet2)) + '.' + decimalToBinary(Integer.parseInt(octet3)) + '.' + decimalToBinary(Integer.parseInt(octet4));
 
 
-        String andOperation = "";
-        //String broadcastAddress = "";
+        String networkAddress = "";
 
         for (int i = 0; i < 35; i++){
-            andOperation += compare(fullIpAddress.charAt(i), subnetString.charAt(i));
+            networkAddress += compare(ipAddressBinary.charAt(i), subnetMask.charAt(i));
         }
 
-        StringBuilder broadcastAddress = new StringBuilder(andOperation);
+        StringBuffer broadcastAddress = new StringBuffer(networkAddress);
 
-        for (int i = 34; i > 34 - pow; i--){
+
+        int extra = 0;
+
+        if (pow > 8 && pow < 17) extra = 1;
+        else if (pow > 16 && pow < 25) extra = 2;
+        else if (pow > 24) extra = 3;
+
+        for (int i = 34; i > 34 - pow - extra; i--){
             if (broadcastAddress.charAt(i) == '.') {
                 continue;
             }else {
@@ -127,26 +102,27 @@ public class Main {
         String broadCastAddress = String.valueOf(broadcastAddress);
 
 
-        String[] fullIpAddress2 = fullIpAddress.split("\\.");
-        String[] subnetString2 = subnetString.split("\\.");
-        String[] andOperation2 = andOperation.split("\\.");
-        String[] broadcastAddress2 = broadCastAddress.split("\\.");
 
+        String[] fullIpAddressDisplay = ipAddressBinary.split("\\.");
+        String[] subnetStringDisplay = subnetMask.split("\\.");
+        String[] networkAddressDisplay = networkAddress.split("\\.");
+        String[] broadcastAddressDisplay = broadCastAddress.split("\\.");
 
-        System.out.println("IP Address decimal:   " +  binaryToDecimal(fullIpAddress2[0]) + '.' + binaryToDecimal(fullIpAddress2[1]) + '.' + binaryToDecimal(fullIpAddress2[2]) + '.' + binaryToDecimal(fullIpAddress2[3]));
+        System.out.println("IP Address:                 " +  binaryToDecimal(fullIpAddressDisplay[0]) + '.' + binaryToDecimal(fullIpAddressDisplay[1]) + '.' + binaryToDecimal(fullIpAddressDisplay[2]) + '.' + binaryToDecimal(fullIpAddressDisplay[3]));
+        System.out.println("Subnet Mask:                " +  binaryToDecimal(subnetStringDisplay[0]) + '.' + binaryToDecimal(subnetStringDisplay[1]) + '.' + binaryToDecimal(subnetStringDisplay[2]) + '.' + binaryToDecimal(subnetStringDisplay[3]));
+        System.out.println("Network Address:            " +  binaryToDecimal(networkAddressDisplay[0]) + '.' + binaryToDecimal(networkAddressDisplay[1]) + '.' + binaryToDecimal(networkAddressDisplay[2]) + '.' + binaryToDecimal(networkAddressDisplay[3]));
+        System.out.println("Network range:              " +  binaryToDecimal(networkAddressDisplay[0]) + '.' + binaryToDecimal(networkAddressDisplay[1]) + '.' + binaryToDecimal(networkAddressDisplay[2]) + '.' + (binaryToDecimal(networkAddressDisplay[3]) + 1) + "   --  " + binaryToDecimal(broadcastAddressDisplay[0]) + '.' + binaryToDecimal(broadcastAddressDisplay[1]) + '.' + binaryToDecimal(broadcastAddressDisplay[2]) + '.' + (binaryToDecimal(broadcastAddressDisplay[3]) - 1));
+        System.out.println("Broadcast Address:          " +  binaryToDecimal(broadcastAddressDisplay[0]) + '.' + binaryToDecimal(broadcastAddressDisplay[1]) + '.' + binaryToDecimal(broadcastAddressDisplay[2]) + '.' + binaryToDecimal(broadcastAddressDisplay[3]) + "\n");
 
-        System.out.println("IP Address:          " + fullIpAddress);
-        System.out.println("Subnet Mask:         " + subnetString);
-        System.out.println("Network Address:     " + andOperation);
-        System.out.println("Broadcast Address:   " + broadcastAddress);
-
-        //String andOperation2 = andOperation.replace(".", "");
+        System.out.println("IP Address Binary:          " + ipAddressBinary);
+        System.out.println("Subnet Mask Binary:         " + subnetMask);
+        System.out.println("Network Address Binary:     " + networkAddress);
+        System.out.println("Broadcast Address Binary:   " + broadcastAddress);
     }
 
-    static byte[][] subnet = {{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1}};
-    static byte[][] inputIpAddress = {{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1}};
+    static byte[][] subnetArray = {{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1}};
 
-    static String subnetString = "";
+    //static String subnetString = "";
 
     public static int calculation(int number) {
         int pow = 1;
@@ -157,7 +133,7 @@ public class Main {
         return pow;
     }
 
-    public static String calculation2(int number){
+    public static String decimalToBinary(int number){
         String binary = "";
 
         for (int i = 128; i > 0; i = i / 2){
