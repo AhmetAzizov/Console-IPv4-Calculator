@@ -10,13 +10,31 @@ public class Main {
         System.out.print("Please enter IP address:         ");
         String netAddress = reader.nextLine();
         System.out.println();
+        char networkClass;
         int pow = calculation(number);
-        String subnetMask = "";
+        double totalHosts = totalHosts(pow, 1);
+        double usableHosts = totalHosts(pow, 2);
+
+        String[] netAddressInput = netAddress.split("\\.");
+
+        String octet1 = netAddressInput[0];
+        String octet2 = netAddressInput[1];
+        String octet3 = netAddressInput[2];
+        String octet4 = netAddressInput[3];
+
+        String ipAddressBinary = decimalToBinary(Integer.parseInt(octet1)) + '.' + decimalToBinary(Integer.parseInt(octet2)) + '.' + decimalToBinary(Integer.parseInt(octet3)) + '.' + decimalToBinary(Integer.parseInt(octet4));
+
+
+        if(Integer.parseInt(octet1) < 128) networkClass = 'A';
+        else if(Integer.parseInt(octet1) < 192) networkClass = 'B';
+        else if(Integer.parseInt(octet1) < 224) networkClass = 'C';
+        else if(Integer.parseInt(octet1) < 240) networkClass = 'D';
+        else networkClass = 'E';
 
 
         if (pow > 24){
-            int octet4 = pow - 24;
-            for (int i = 8 - octet4; i < 8; i++){
+            int Octet4 = pow - 24;
+            for (int i = 8 - Octet4; i < 8; i++){
                 subnetArray[0][i] = 0;
             }
 
@@ -26,9 +44,9 @@ public class Main {
                 }
             }
         }
-        else if(pow > 16 && pow < 25){
-            int octet3 = pow - 16;
-            for (int i = 8 - octet3; i < 8; i++){
+        else if(pow > 16){
+            int Octet3 = pow - 16;
+            for (int i = 8 - Octet3; i < 8; i++){
                 subnetArray[1][i] = 0;
             }
 
@@ -38,9 +56,9 @@ public class Main {
                 }
             }
         }
-        else if(pow > 8 && pow < 17){
-            int octet2 = pow - 8;
-            for (int i = 8 - octet2; i < 8; i++){
+        else if(pow > 8){
+            int Octet2 = pow - 8;
+            for (int i = 8 - Octet2; i < 8; i++){
                 subnetArray[2][i] = 0;
             }
 
@@ -56,24 +74,10 @@ public class Main {
             }
         }
 
-
-        // for converting subnet mask from array to string
-        for (int i = 0; i < 4; i++){
-            for (int j = 0; j < 8; j++){
-                subnetMask += String.valueOf(subnetArray[i][j]);
-            }
-            if (i < 3) subnetMask += '.';
-        }
-
-        String[] netAddressInput = netAddress.split("\\.");
-
-        String octet1 = netAddressInput[0];
-        String octet2 = netAddressInput[1];
-        String octet3 = netAddressInput[2];
-        String octet4 = netAddressInput[3];
+        String subnetMask = subnetArrayToString(subnetArray);
 
 
-        String ipAddressBinary = decimalToBinary(Integer.parseInt(octet1)) + '.' + decimalToBinary(Integer.parseInt(octet2)) + '.' + decimalToBinary(Integer.parseInt(octet3)) + '.' + decimalToBinary(Integer.parseInt(octet4));
+
 
 
         String networkAddress = "";
@@ -83,7 +87,6 @@ public class Main {
         }
 
         StringBuffer broadcastAddress = new StringBuffer(networkAddress);
-
 
         int extra = 0;
 
@@ -108,12 +111,17 @@ public class Main {
         String[] networkAddressDisplay = networkAddress.split("\\.");
         String[] broadcastAddressDisplay = broadCastAddress.split("\\.");
 
+        System.out.println("-------------------------------------------------------------------------------------------------------------------------------------- \n");
         System.out.println("IP Address:                 " +  binaryToDecimal(fullIpAddressDisplay[0]) + '.' + binaryToDecimal(fullIpAddressDisplay[1]) + '.' + binaryToDecimal(fullIpAddressDisplay[2]) + '.' + binaryToDecimal(fullIpAddressDisplay[3]));
-        System.out.println("Subnet Mask:                " +  binaryToDecimal(subnetStringDisplay[0]) + '.' + binaryToDecimal(subnetStringDisplay[1]) + '.' + binaryToDecimal(subnetStringDisplay[2]) + '.' + binaryToDecimal(subnetStringDisplay[3]));
         System.out.println("Network Address:            " +  binaryToDecimal(networkAddressDisplay[0]) + '.' + binaryToDecimal(networkAddressDisplay[1]) + '.' + binaryToDecimal(networkAddressDisplay[2]) + '.' + binaryToDecimal(networkAddressDisplay[3]));
-        System.out.println("Network range:              " +  binaryToDecimal(networkAddressDisplay[0]) + '.' + binaryToDecimal(networkAddressDisplay[1]) + '.' + binaryToDecimal(networkAddressDisplay[2]) + '.' + (binaryToDecimal(networkAddressDisplay[3]) + 1) + "   --  " + binaryToDecimal(broadcastAddressDisplay[0]) + '.' + binaryToDecimal(broadcastAddressDisplay[1]) + '.' + binaryToDecimal(broadcastAddressDisplay[2]) + '.' + (binaryToDecimal(broadcastAddressDisplay[3]) - 1));
-        System.out.println("Broadcast Address:          " +  binaryToDecimal(broadcastAddressDisplay[0]) + '.' + binaryToDecimal(broadcastAddressDisplay[1]) + '.' + binaryToDecimal(broadcastAddressDisplay[2]) + '.' + binaryToDecimal(broadcastAddressDisplay[3]) + "\n");
-
+        System.out.println("Usable Host IP Range:       " +  binaryToDecimal(networkAddressDisplay[0]) + '.' + binaryToDecimal(networkAddressDisplay[1]) + '.' + binaryToDecimal(networkAddressDisplay[2]) + '.' + (binaryToDecimal(networkAddressDisplay[3]) + 1) + "   -  " + binaryToDecimal(broadcastAddressDisplay[0]) + '.' + binaryToDecimal(broadcastAddressDisplay[1]) + '.' + binaryToDecimal(broadcastAddressDisplay[2]) + '.' + (binaryToDecimal(broadcastAddressDisplay[3]) - 1));
+        System.out.println("Broadcast Address:          " +  binaryToDecimal(broadcastAddressDisplay[0]) + '.' + binaryToDecimal(broadcastAddressDisplay[1]) + '.' + binaryToDecimal(broadcastAddressDisplay[2]) + '.' + binaryToDecimal(broadcastAddressDisplay[3]));
+        System.out.println("Subnet Mask:                " +  binaryToDecimal(subnetStringDisplay[0]) + '.' + binaryToDecimal(subnetStringDisplay[1]) + '.' + binaryToDecimal(subnetStringDisplay[2]) + '.' + binaryToDecimal(subnetStringDisplay[3]));
+        System.out.println("Total Number of Hosts:      " + (int)totalHosts);
+        System.out.println("Number of Usable Hosts:     " + (int)usableHosts);
+        System.out.println("IP Class:                   " + networkClass);
+        System.out.println("Short:                      " + netAddress + "/" + (32 - pow));
+        System.out.println("\n ----------------------------------------------------------------------------------------------------------------------------------- \n");
         System.out.println("IP Address Binary:          " + ipAddressBinary);
         System.out.println("Subnet Mask Binary:         " + subnetMask);
         System.out.println("Network Address Binary:     " + networkAddress);
@@ -131,6 +139,18 @@ public class Main {
         }
 
         return pow;
+    }
+
+    static double totalHosts(int pow, int choice){
+        double result = 0;
+
+        if (choice == 1) {
+            result = Math.pow(2, pow);
+        }else if(choice == 2){
+            result = Math.pow(2, pow) - 2;
+        }
+
+        return result;
     }
 
     public static String decimalToBinary(int number){
@@ -177,5 +197,18 @@ public class Main {
         }
 
         return decimal;
+    }
+
+    static String subnetArrayToString(byte[][] subnetArray){
+        String subnetString = "";
+
+        for (int i = 0; i < 4; i++){
+            for (int j = 0; j < 8; j++){
+                subnetString += String.valueOf(subnetArray[i][j]);
+            }
+            if (i < 3) subnetString += '.';
+        }
+
+        return subnetString;
     }
 }
